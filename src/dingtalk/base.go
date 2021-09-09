@@ -94,8 +94,8 @@ type outGoingModel struct {
 type GitlabWebhookModel struct {
 	Object_kind       string `json:"object_kind"`
 	Object_attributes struct {
-		Id              int64  `json:"id"`
-		Detailed_status string `json:"detailed_status"`
+		Id     int64  `json:"id"`
+		Status string `json:"status"`
 	} `json:"object_attributes"`
 	Project struct {
 		Name string `json:"name"`

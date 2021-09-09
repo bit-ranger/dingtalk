@@ -9,13 +9,11 @@ import (
 
 func execDingCommand(msg GitlabWebhookModel) string {
 	kind := msg.Object_kind
-	status := msg.Object_attributes.Detailed_status
+	status := msg.Object_attributes.Status
+	projectName := msg.Project.Name
 	if kind == "pipeline" && status == "failed" {
-		strFormat :=
-			`
-    Pipeline %s
-`
-		return fmt.Sprintf(strFormat, status)
+		strFormat := "%s Pipeline Failed"
+		return fmt.Sprintf(strFormat, projectName)
 	}
 
 	return ""
