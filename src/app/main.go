@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	println("starting --------")
 	http.Handle("/gitlab/webhook", &dingtalk.GitlabWebhookHandler{})
 	_ = http.ListenAndServe(":8000", nil)
 }
