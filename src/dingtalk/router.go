@@ -10,7 +10,7 @@ import (
 func execDingCommand(msg GitlabWebhookModel) string {
 	kind := msg.Object_kind
 	status := msg.Object_attributes.Detailed_status
-	if kind == "pipeline" && status != "passed" {
+	if kind == "pipeline" && status == "failed" {
 		strFormat :=
 			`
     Pipeline %s
