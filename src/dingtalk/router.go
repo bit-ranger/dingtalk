@@ -7,15 +7,24 @@ import (
 	"net/http"
 )
 
-func execDingCommand(msg GitlabWebhookModel) string {
+var tokenMap = make(map[string]string)
+
+func execDingCommand(msg GitlabWebhookModel, token string) string {
+
 	kind := msg.Object_kind
 	status := msg.Object_attributes.Status
 	projectName := msg.Project.Name
+
 	if kind == "pipeline" && status == "failed" {
 		strFormat := "%s Pipeline Failed"
 		return fmt.Sprintf(strFormat, projectName)
 	}
 
+	oldStatus, ok := tokenMap[token]
+	if kind == "pipeline" && status == "success" && ok && oldStatus == "failed" {
+		strFormat := "%s Pipeline Success"
+		return fmt.Sprintf(strFormat, projectName)
+	}
 	return ""
 }
 
@@ -43,7 +52,10 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 	//b, err := json.Marshal(obj)
 
-	msg := execDingCommand(obj)
+	msg := execDingCommand(obj, token)
+
+	tokenMap[token] = obj.Object_attributes.Status
+
 	if msg == "" {
 		return
 	}
