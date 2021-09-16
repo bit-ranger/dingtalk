@@ -98,7 +98,8 @@ type GitlabWebhookModel struct {
 		Status string `json:"status"`
 	} `json:"object_attributes"`
 	Project struct {
-		Name string `json:"name"`
+		Name   string `json:"name"`
+		WebUrl string `json:"web_url"`
 	} `json:"project"`
 }
 
