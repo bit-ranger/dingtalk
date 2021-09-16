@@ -1,4 +1,4 @@
-package dingtalk
+package dingding
 
 type msgTypeType string
 

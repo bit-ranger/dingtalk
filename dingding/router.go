@@ -1,7 +1,7 @@
-package dingtalk
+package dingding
 
 import (
-	"dingtalk/src/log"
+	"dingtalk/log"
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
@@ -66,7 +66,7 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	log.Logger.WithFields(logrus.Fields{
 		"token":  token,
 		"status": tokenMap[token],
-	}).Info("dingtalk pipline old status")
+	}).Info("dingding pipline old status")
 
 	log.Logger.Info(obj.Project.WebUrl)
 
@@ -77,7 +77,7 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	log.Logger.WithFields(logrus.Fields{
 		"token":  token,
 		"status": tokenMap[token],
-	}).Info("dingtalk pipline new status")
+	}).Info("dingding pipline new status")
 
 	if dingMap == nil {
 		return
@@ -92,7 +92,9 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}).Info("send msg...")
 
 	// 发送钉钉消息
-	cli.SendMarkDownMessageBySlice(tokenMap[token], dingMap.Slice())
-
+	err = cli.SendMarkDownMessageBySlice(tokenMap[token], dingMap.Slice())
+	if err != nil {
+		log.Logger.Error(err.Error())
+	}
 	_, _ = w.Write([]byte(""))
 }
