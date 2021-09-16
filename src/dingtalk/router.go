@@ -1,31 +1,42 @@
 package dingtalk
 
 import (
+	"dingtalk/src/log"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 )
 
 var tokenMap = make(map[string]string)
 
-func execDingCommand(msg GitlabWebhookModel, token string) string {
-
+func execDingCommand(msg GitlabWebhookModel, token string) *dingMap {
 	kind := msg.Object_kind
 	status := msg.Object_attributes.Status
+	pipelineId := msg.Object_attributes.Id
+	webUrl := msg.Project.WebUrl
 	projectName := msg.Project.Name
 
 	if kind == "pipeline" && status == "failed" {
-		strFormat := "%s Pipeline Failed"
-		return fmt.Sprintf(strFormat, projectName)
+		dm := DingMap()
+		dm.Set(projectName, H2)
+		dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
+		dm.Set(fmt.Sprintf("状态: $$%s$$", status), RED)
+		dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
+		return dm
 	}
 
 	oldStatus, ok := tokenMap[token]
 	if kind == "pipeline" && status == "success" && ok && oldStatus == "failed" {
-		strFormat := "%s Pipeline Success"
-		return fmt.Sprintf(strFormat, projectName)
+		dm := DingMap()
+		dm.Set(projectName, H2)
+		dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
+		dm.Set(fmt.Sprintf("状态: $$%s$$", status), GREEN)
+		dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
+		return dm
 	}
-	return ""
+	return nil
 }
 
 // MyHandler实现Handler接口
@@ -52,17 +63,36 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 	//b, err := json.Marshal(obj)
 
-	msg := execDingCommand(obj, token)
+	log.Logger.WithFields(logrus.Fields{
+		"token":  token,
+		"status": tokenMap[token],
+	}).Info("dingtalk pipline old status")
+
+	log.Logger.Info(obj.Project.WebUrl)
+
+	dingMap := execDingCommand(obj, token)
 
 	tokenMap[token] = obj.Object_attributes.Status
 
-	if msg == "" {
+	log.Logger.WithFields(logrus.Fields{
+		"token":  token,
+		"status": tokenMap[token],
+	}).Info("dingtalk pipline new status")
+
+	if dingMap == nil {
 		return
 	}
 
 	var dingToken = []string{token}
 	cli := InitDingTalk(dingToken, ".")
-	println("send msg %s, %s", token, msg)
-	cli.SendTextMessage(msg)
+
+	log.Logger.WithFields(logrus.Fields{
+		"token":   token,
+		"message": dingMap.l,
+	}).Info("send msg...")
+
+	// 发送钉钉消息
+	cli.SendMarkDownMessageBySlice(tokenMap[token], dingMap.Slice())
+
 	_, _ = w.Write([]byte(""))
 }
