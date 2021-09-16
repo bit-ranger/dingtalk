@@ -68,13 +68,14 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		"status": tokenMap[token],
 	}).Info("dingding pipline old status")
 
-	log.Logger.Info(obj.Project.WebUrl)
-
 	dingMap := execDingCommand(obj, token)
 
 	tokenMap[token] = obj.Object_attributes.Status
-
+	
+	pipelineId := obj.Object_attributes.Id
+	
 	log.Logger.WithFields(logrus.Fields{
+		"pipelineId": pipelineId,
 		"token":  token,
 		"status": tokenMap[token],
 	}).Info("dingding pipline new status")
@@ -87,6 +88,7 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	cli := InitDingTalk(dingToken, ".")
 
 	log.Logger.WithFields(logrus.Fields{
+		"pipelineId": pipelineId,
 		"token":   token,
 		"message": dingMap.l,
 	}).Info("send msg...")
