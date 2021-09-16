@@ -61,9 +61,11 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		print("unmarshal err %s", err.Error())
 		return
 	}
-	//b, err := json.Marshal(obj)
+	
+	pipelineId := obj.Object_attributes.Id
 
 	log.Logger.WithFields(logrus.Fields{
+		"pipelineId": pipelineId,
 		"token":  token,
 		"status": tokenMap[token],
 	}).Info("dingding pipline old status")
@@ -71,8 +73,6 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	dingMap := execDingCommand(obj, token)
 
 	tokenMap[token] = obj.Object_attributes.Status
-	
-	pipelineId := obj.Object_attributes.Id
 	
 	log.Logger.WithFields(logrus.Fields{
 		"pipelineId": pipelineId,
