@@ -35,7 +35,7 @@
     func InitDingTalkWithSecret(tokens string, secret string) *DingTalk
     ```
 -   ```go
-    import "github.com/blinkbean/dingtalk"
+    import "github.com/blinkbean/dingding"
     
     func main() {
         // 单个机器人有单位时间内消息条数的限制，如果有需要可以初始化多个token，发消息时随机发给其中一个机器人。
@@ -73,7 +73,7 @@
         "sceneGroupCode":"project",
         "senderId":"$:LWCP_v1:$x4wFOct/DGctv96o4IxxB*==",
         "senderNick":"blinkbean",
-        "sessionWebhook":"https://oapi.dingtalk.com/robot/sendBySession?session=6d69b333f243db32d42c11sda9de620*",
+        "sessionWebhook":"https://oapi.dingding.com/robot/sendBySession?session=6d69b333f243db32d42c11sda9de620*",
         "sessionWebhookExpiredTime":1595212438350,
         "text":{
             "content":" hello"
