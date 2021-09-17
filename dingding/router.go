@@ -63,7 +63,7 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 	
 	status := obj.Object_attributes.Status
-	if status == "pending" || status== "running" {
+	if status == "pending" || status== "running" || status== "canceled" {
 		return
 	}
 	
