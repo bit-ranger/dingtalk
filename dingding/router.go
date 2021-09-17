@@ -63,7 +63,9 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 	
 	status := obj.Object_attributes.Status
-	if status == "pending" || status== "running" || status== "canceled" {
+	if status == "success" || status== "failed" {
+		//只处理success和failed两种状态的请求
+	} else {
 		return
 	}
 	
