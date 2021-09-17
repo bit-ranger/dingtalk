@@ -62,6 +62,11 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	
+	status := obj.Object_attributes.Status
+	if status == "pending" || status== "running" {
+		return
+	}
+	
 	pipelineId := obj.Object_attributes.Id
 
 	log.Logger.WithFields(logrus.Fields{
