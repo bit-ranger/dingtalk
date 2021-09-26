@@ -16,3 +16,5 @@ vendor/
 .idea
 dingding/go.mod
 go.sum
+github.com
+golang.org
