@@ -17,24 +17,26 @@ func execDingCommand(msg GitlabWebhookModel, token string) *dingMap {
 	pipelineId := msg.Object_attributes.Id
 	webUrl := msg.Project.WebUrl
 	projectName := msg.Project.Name
-
-	if kind == "pipeline" && status == "failed" {
-		dm := DingMap()
-		dm.Set(projectName, H2)
-		dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
-		dm.Set(fmt.Sprintf("状态: $$%s$$", status), RED)
-		dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
-		return dm
-	}
-
-	oldStatus, ok := tokenMap[token]
-	if kind == "pipeline" && status == "success" && ok && oldStatus == "failed" {
-		dm := DingMap()
-		dm.Set(projectName, H2)
-		dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
-		dm.Set(fmt.Sprintf("状态: $$%s$$", status), GREEN)
-		dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
-		return dm
+	
+	oldStatus, _ := tokenMap[token]
+	
+	if kind == "pipeline" {
+		if status != oldStatus && status == "failed" {
+			dm := DingMap()
+			dm.Set(projectName, H2)
+			dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
+			dm.Set(fmt.Sprintf("状态: $$%s$$", status), RED)
+			dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
+			return dm
+		}
+		if status != oldStatus && status == "success" {
+			dm := DingMap()
+			dm.Set(projectName, H2)
+			dm.Set(fmt.Sprintf("任务: #%d", pipelineId), N)
+			dm.Set(fmt.Sprintf("状态: $$%s$$", status), GREEN)
+			dm.Set(fmt.Sprintf("地址: $$%s/-/pipelines/%d$$", webUrl, pipelineId), BLUE)
+			return dm
+		}
 	}
 	return nil
 }
