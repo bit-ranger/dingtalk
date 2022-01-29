@@ -9,17 +9,17 @@ import (
 	"net/http"
 )
 
-var tokenMap = make(map[string]string)
+var projectMap = make(map[string]string)
 
-func execDingCommand(msg GitlabWebhookModel, token string) *dingMap {
+func execDingCommand(msg GitlabWebhookModel) *dingMap {
 	kind := msg.Object_kind
 	status := msg.Object_attributes.Status
 	pipelineId := msg.Object_attributes.Id
 	webUrl := msg.Project.WebUrl
 	projectName := msg.Project.Name
-	
-	oldStatus, _ := tokenMap[token]
-	
+
+	oldStatus, _ := projectMap[projectName]
+
 	if kind == "pipeline" {
 		if status != oldStatus && status == "failed" {
 			dm := DingMap()
@@ -63,30 +63,32 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		print("unmarshal err %s", err.Error())
 		return
 	}
-	
+
 	status := obj.Object_attributes.Status
-	if status == "success" || status== "failed" {
+	if status == "success" || status == "failed" {
 		//只处理success和failed两种状态的请求
 	} else {
 		return
 	}
-	
+
 	pipelineId := obj.Object_attributes.Id
 
+	projectName := obj.Project.Name
+
 	log.Logger.WithFields(logrus.Fields{
-		"pipelineId": pipelineId,
-		"token":  token,
-		"status": tokenMap[token],
+		"pipelineId":  pipelineId,
+		"projectName": projectName,
+		"status":      projectMap[projectName],
 	}).Info("dingding pipline old status")
 
-	dingMap := execDingCommand(obj, token)
+	dingMap := execDingCommand(obj)
 
-	tokenMap[token] = obj.Object_attributes.Status
-	
+	projectMap[projectName] = obj.Object_attributes.Status
+
 	log.Logger.WithFields(logrus.Fields{
-		"pipelineId": pipelineId,
-		"token":  token,
-		"status": tokenMap[token],
+		"pipelineId":  pipelineId,
+		"projectName": projectName,
+		"status":      projectMap[projectName],
 	}).Info("dingding pipline new status")
 
 	if dingMap == nil {
@@ -97,13 +99,13 @@ func (h *GitlabWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	cli := InitDingTalk(dingToken, ".")
 
 	log.Logger.WithFields(logrus.Fields{
-		"pipelineId": pipelineId,
-		"token":   token,
-		"message": dingMap.l,
+		"pipelineId":  pipelineId,
+		"projectName": projectName,
+		"message":     dingMap.l,
 	}).Info("send msg...")
 
 	// 发送钉钉消息
-	err = cli.SendMarkDownMessageBySlice(tokenMap[token], dingMap.Slice())
+	err = cli.SendMarkDownMessageBySlice(projectMap[projectName], dingMap.Slice())
 	if err != nil {
 		log.Logger.Error(err.Error())
 	}
